@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101629">
+<title>Patel AI Assistant</title>
+
+<style>
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#101629;
+  color:white;
+}
+
+header {
+  padding:18px;
+  background:#19243d;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid #34415e;
+}
+
+.logo {
+  font-size:23px;
+  font-weight:bold;
+  color:#8ab4ff;
+}
+
+#language {
+  background:#293653;
+  color:white;
+  padding:9px;
+  border:0;
+  border-radius:9px;
+}
+
+main {
+  max-width:700px;
+  margin:auto;
+  padding:15px;
+  padding-bottom:110px;
+}
+
+.welcome {
+  text-align:center;
+  margin:35px 0;
+}
+
+.welcome h1 {
+  color:#8ab4ff;
+}
+
+#chat {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.message {
+  padding:13px 16px;
+  border-radius:15px;
+  max-width:85%;
+  line-height:1.5;
+  white-space:pre-wrap;
+}
+
+.user {
+  align-self:flex-end;
+  background:#315fbd;
+}
+
+.bot {
+  align-self:flex-start;
+  background:#26334d;
+}
+
+.input-area {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#19243d;
+  padding:12px;
+  display:flex;
+  gap:8px;
+  max-width:700px;
+  margin:auto;
+}
+
+input {
+  min-width:0;
+  flex:1;
+  padding:14px;
+  border:0;
+  border-radius:12px;
+  background:#293653;
+  color:white;
+  outline:none;
+}
+
+button {
+  border:0;
+  border-radius:12px;
+  padding:12px;
+  background:#3978ed;
+  color:white;
+  font-weight:bold;
+}
+
+#voice { background:#475775; }
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">✦ Patel AI</div>
+  <select id="language">
+    <option value="en">English</option>
+    <option value="hi">हिन्दी</option>
+  </select>
+</header>
+
+<main>
+  <div class="welcome" id="welcome">
+    <h1>Namaste! 👋</h1>
+    <p>Your personal AI assistant</p>
+    <p>Ask anything in Hindi or English.</p>
+  </div>
+
+  <div id="chat"></div>
+</main>
+
+<div class="input-area">
+  <button id="voice" onclick="speakInput()">🎤</button>
+  <input id="question"
+    placeholder="Ask Patel AI anything..."
+    onkeydown="if(event.key==='Enter') sendMessage()">
+  <button onclick="sendMessage()">➤</button>
+</div>
+
+<script>
+const chat = document.getElementById("chat");
+const question = document.getElementById("question");
+const language = document.getElementById("language");
+
+let history = [];
+
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = "message " + type;
+  div.textContent = text;
+  chat.appendChild(div);
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+function sendMessage() {
+  const text = question.value.trim();
+  if (!text) return;
+
+  document.getElementById("welcome").style.display = "none";
+
+  addMessage(text, "user");
+  history.push({role:"user", content:text});
+  question.value = "";
+
+  const reply = language.value === "hi"
+    ? "नमस्ते! आपका संदेश मिल गया। अगले चरण में मुझे AI इंजन से जोड़ेंगे।"
+    : "Hello! Your message was received. In the next step, we will connect the AI engine.";
+
+  addMessage(reply, "bot");
+  history.push({role:"assistant", content:reply});
+
+  try {
+    localStorage.setItem("patel_ai_history",
+      JSON.stringify(history));
+  } catch(e) {}
+}
+
+function speakInput() {
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Voice typing is not supported in this browser.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = language.value === "hi" ? "hi-IN" : "en-IN";
+  recognition.onresult = (event) => {
+    question.value = event.results[0][0].transcript;
+  };
+  recognition.start();
+}
+</script>
+
+</body>
+</html>
